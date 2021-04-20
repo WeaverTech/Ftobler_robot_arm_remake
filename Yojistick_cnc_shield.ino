@@ -11,176 +11,158 @@
   const int dirPinZ = 7; // z direction pin
 
 // Endstop X
-  const int endstopX = ?; 
+  const int EndX = 9;
+  int EndEnX = 0;
 
- // joystick1
-  int vrx = A0; 
-  int vry = A1; 
-  
+// Endstop Y
+  const int EndY = 10;
+  int EndEnY = 0;
+
+// Endstop Z
+  const int EndZ = 11;
+  int EndEnZ = 0;
+
+ // joystick
+  int vrx = A0; // ABORT PIN
+  int vry = A1; // HOLD PIN
   int vrx_data = 0; 
-  int vry_data = 0;
-   
+  int vry_data = 0; 
   int x = 0; 
   int y = 0;
   int SMSpeed = 500; // Stepper Motor Speed 
 
   // joystick2
-  int vrz = A2; 
+  int vrz = A3; // COO EN PIN
   int vrz_data = 0;
   int z;
   int SMSpeed2 = 500;
 
 
 void setup() {
- // Sets the two pins as Outputs
      Serial.begin(9600); 
+     
      pinMode(stepPin,OUTPUT); 
      pinMode(dirPin,OUTPUT);
-     
+
      pinMode(stepPin2,OUTPUT); 
      pinMode(dirPin2,OUTPUT);
-     
+
      pinMode(stepPinZ, OUTPUT);
      pinMode(dirPinZ, OUTPUT);
-     
+
+     pinMode(EndX , INPUT_PULLUP);
      pinMode(vrz , INPUT);
      pinMode(vrx , INPUT); 
      pinMode(vry , INPUT); 
-     pinMode(endstopX , INPUT);
  }
 
- 
- void loop()  {
-    joystick(); 
-    joystick2();
- }
 
-void joystick() {
+void X_Axis() {
     vrx_data = analogRead(vrx);
-    vry_data = analogRead(vry);
-    Serial.print("Vrx:"); 
+    Serial.print("Vrx: "); 
     Serial.println(vrx_data);
-    Serial.print("Vry:");
-    Serial.println(vry_data); 
-    Serial.print("Vrz:");
-    Serial.println(vrz_data);
 
-// to stop the stepper motor
-if ( (vrx_data > 490)  &&   (vrx_data < 510)   ){
-;
-}
+    EndEnX = digitalRead(EndX);
+    Serial.print("ENDSTOP X STATUS: ");
+    Serial.println(EndEnX);
 
-if ( vrx_data > 700){
-   digitalWrite(dirPin,HIGH);
-   x = x + 1; 
-   digitalWrite(stepPin,HIGH); 
-   delayMicroseconds(SMSpeed); 
-   digitalWrite(stepPin,LOW); 
-   delayMicroseconds(SMSpeed); 
-}
 
-if ( vrx_data < 300) {
-  digitalWrite(dirPin,LOW);
-  x = x - 1; 
-  digitalWrite(stepPin,HIGH); 
-  delayMicroseconds(SMSpeed); 
-  digitalWrite(stepPin,LOW); 
-  delayMicroseconds(SMSpeed);  
-}
+    if ( (vrx_data > 490)  &&   (vrx_data < 510) ) {
+        digitalWrite(dirPin, LOW);
+        digitalWrite(stepPin, LOW);
+    }
 
-if ( (vrx_data > 490) && (vrx_data < 510)){
-;
-}
-if ( vrx_data > 700  ) {
-    digitalWrite(dirPin,HIGH);
-    x = x + 1; 
-    digitalWrite(stepPin,HIGH); 
-    delayMicroseconds(SMSpeed); 
-    digitalWrite(stepPin,LOW); 
-    delayMicroseconds(SMSpeed);
+    if ( vrx_data > 700) {
+        digitalWrite(dirPin, HIGH);
+        x = x + 1; 
+        digitalWrite(stepPin, HIGH); 
+        delayMicroseconds(SMSpeed); 
+        digitalWrite(stepPin, LOW); 
+        delayMicroseconds(SMSpeed); 
+    }
+
+    if ( vrx_data < 300 && EndEnX != LOW ) {
+        digitalWrite(dirPin,LOW);
+        x = x - 1; 
+        digitalWrite(stepPin, HIGH); 
+        delayMicroseconds(SMSpeed); 
+        digitalWrite(stepPin, LOW); 
+        delayMicroseconds(SMSpeed);  
+    }
 }
 
 
 
-// vry 
-if ( (vry_data > 490)  &&   (vry_data < 510)   ){
-;
-}
+void Y_Axis() {
+  vry_data = analogRead(vry);
+  Serial.print("Vry: ");
+  Serial.println(vry_data); 
 
-if ( vry_data > 700){
-   digitalWrite(dirPin2,HIGH);
-   y = y + 1; 
-   digitalWrite(stepPin2,HIGH); 
-   delayMicroseconds(SMSpeed); 
-   digitalWrite(stepPin2,LOW); 
-   delayMicroseconds(SMSpeed); 
-}
+  EndEnY = digitalRead(EndY);
+  Serial.print("ENDSTOP Y STATUS: ");
+  Serial.println(EndEnY);
+  
+  if ( (vry_data > 490)  &&   (vry_data < 510)   ){
+    digitalWrite(dirPin2, LOW);
+    digitalWrite(stepPin2, LOW);
+  }
 
-if ( vry_data < 300) {
-  digitalWrite(dirPin2,LOW);
-  y = y - 1;
-  digitalWrite(stepPin2,HIGH); 
-  delayMicroseconds(SMSpeed); 
-  digitalWrite(stepPin2,LOW); 
-  delayMicroseconds(SMSpeed);  
-}
-
-if ( (vry_data > 490) && (vry_data < 510)){
-;
-}
-
-if ( vry_data > 700  ) {
-    digitalWrite(dirPin2,HIGH);
-    y = y + 1;
+  if ( vry_data > 700){
+     digitalWrite(dirPin2,HIGH);
+     y = y + 1; 
+     digitalWrite(stepPin2,HIGH); 
+     delayMicroseconds(SMSpeed); 
+     digitalWrite(stepPin2,LOW); 
+     delayMicroseconds(SMSpeed); 
+  }
+  
+  if ( vry_data < 300 && EndEnY != HIGH ) {
+    digitalWrite(dirPin2,LOW);
+    y = y - 1;
     digitalWrite(stepPin2,HIGH); 
     delayMicroseconds(SMSpeed); 
     digitalWrite(stepPin2,LOW); 
-    delayMicroseconds(SMSpeed);
+    delayMicroseconds(SMSpeed);  
+  }
 }
 
-}
 
+void Z_Axis() {
+   vrz_data = analogRead(vrz);
+   Serial.print("Vrz:"); 
+   Serial.println(vrz_data);
+   
+   EndEnZ = digitalRead(EndZ);
+   Serial.print("ENDSTOP Z STATUS: ");
+   Serial.println(EndEnZ);
 
-// joystick2 do osi Z i grippera
+  if ( (vrz_data > 490)  &&   (vrz_data < 510)   ){
+    digitalWrite(dirPinZ, LOW);
+    digitalWrite(stepPinZ, LOW);
+  }
 
-void joystick2() {
-    vrz_data = analogRead(vrz);
-    Serial.print("Vrz:"); 
-    Serial.println(vrz_data);
-
-// to stop the stepper motor
-if ( (vrz_data > 490)  &&   (vrz_data < 510)   ){
-;
-}
-
-if ( vrz_data > 700){
-   digitalWrite(dirPinZ,HIGH);
-   z = z + 1; 
-   digitalWrite(stepPinZ,HIGH); 
-   delayMicroseconds(SMSpeed2); 
-   digitalWrite(stepPinZ,LOW); 
-   delayMicroseconds(SMSpeed2); 
-}
-
-if ( vrz_data < 300) {
-  digitalWrite(dirPinZ,LOW);
-  z = z - 1; 
-  digitalWrite(stepPinZ,HIGH); 
-  delayMicroseconds(SMSpeed2); 
-  digitalWrite(stepPinZ,LOW); 
-  delayMicroseconds(SMSpeed2);  
-}
-
-if ( (vrz_data > 490) && (vrz_data < 510)){
-;
-}
-if ( vrz_data > 700  ) {
+  if ( vrz_data > 700){
     digitalWrite(dirPinZ,HIGH);
     z = z + 1; 
     digitalWrite(stepPinZ,HIGH); 
     delayMicroseconds(SMSpeed2); 
     digitalWrite(stepPinZ,LOW); 
-    delayMicroseconds(SMSpeed2);
+    delayMicroseconds(SMSpeed2); 
+  }
+  
+  if ( vrz_data < 300) {
+    digitalWrite(dirPinZ,LOW);
+    z = z - 1; 
+    digitalWrite(stepPinZ,HIGH); 
+    delayMicroseconds(SMSpeed2); 
+    digitalWrite(stepPinZ,LOW); 
+    delayMicroseconds(SMSpeed2);  
+  }
 }
 
+void loop() {
+    X_Axis();
+    Y_Axis();
+    Z_Axis();
 }
+ 
